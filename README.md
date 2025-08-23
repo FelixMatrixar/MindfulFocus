@@ -15,24 +15,35 @@
 
 ---
 
-## 📄 Project Summary
+## 📄 Project Title
+**Mindful Focus**
 
-> **Mindful Focus** is a desktop application designed to combat employee burnout and digital eye strain. Using a standard webcam and local AI processing, it passively monitors user well-being by analyzing metrics like **pupil dilation** (cognitive load) and **blink rate** (eye strain). It provides gentle, gamified nudges to encourage healthier work habits, transforming wellness from a chore into an engaging, positive experience.
+## 🎯 Project Objective
+To develop a functional prototype of a desktop wellness application within 48 hours that demonstrates the core AI-driven monitoring features and a unique, incentive-based business model, ready for a compelling pitch presentation.
+
+## 🚨 Problem Statement
+The modern workplace is facing a dual crisis of **employee burnout** and **Digital Eye Strain (DES)**, significantly impacting both well-being and business productivity.
+
+* **The Burnout Epidemic:** Burnout is a recognized occupational phenomenon with severe consequences. A 2024 report by the Future Forum highlights that **41% of desk workers report feeling burned out**. News from sources like **Forbes** and the **Harvard Business Review** consistently points to burnout costing the global economy hundreds of billions of dollars annually in lost productivity, employee turnover, and healthcare costs.
+
+* **The Screen Time Pandemic:** The shift towards remote and hybrid work has dramatically increased screen time. Research published in medical journals, such as the *British Medical Journal (BMJ)*, indicates that **over 60% of computer users experience symptoms of DES**, including headaches, blurred vision, and dry eyes, which directly reduces focus and work quality.
+
+## ✨ Proposed Solution
+**Mindful Focus** is a privacy-first desktop application that acts as an intelligent wellness companion. It uses a standard webcam and on-device AI to passively detect early indicators of burnout and eye strain by analyzing metrics like cognitive load and blink rate.
+
+When it detects signs of fatigue, it provides gentle, non-intrusive notifications and recommends personalized breaks. Its core innovation is a **"Wellness-as-a-Service"** model where users are rewarded with **cashback on their subscription fee** for adopting healthier habits, turning well-being into a rewarding and engaging experience.
 
 ---
 
-## 🎯 1. Business Case
+## 💼 1. Business Case & Monetization
+Our objective is to develop a prototype that proves the viability of a new **"Wellness-as-a-Service" (WaaS)** model. This model disrupts traditional subscriptions by directly rewarding users for engaging in healthy behaviors.
 
-The objective is to develop a winning hackathon prototype that demonstrates a commercially viable solution for the growing corporate wellness market. Success means creating a functional, privacy-first MVP that can later be monetized through a freemium model.
+### 💰 Monetization & Incentive Model
+We are implementing a subscription-based service managed via the **Unibee** payment infrastructure. The core of our business model is the gamified incentive:
 
-### 💰 Monetization Strategy (Post-Hackathon)
-While core features will remain free, a premium tier will be offered for teams and professionals. The payment and subscription infrastructure will be powered by **Unibee**.
+**Users who follow the application's recommendations to take breaks will earn a direct cashback reward, effectively reducing their subscription cost.**
 
-* **Premium Features:**
-    * Team Dashboards & Anonymized Analytics
-    * Advanced Personal Analytics & Historical Trends
-        * Integrations with Calendar Apps (Google, Outlook)
-* **Payment Model:** A recurring monthly/annual subscription (SaaS).
+This creates a powerful, positive feedback loop: the healthier the user's habits become, the less they pay. It's an exciting proposition that aligns our revenue directly with our users' well-being.
 
 ---
 
@@ -108,7 +119,7 @@ Progress is tracked visually to ensure transparency and maintain momentum.
 
 ---
 
-## 🌊 Our Development Approach
+## 🌊 8. Our Development Approach
 
 Our workflow is built on three core principles inspired by the Kanban method, emphasizing flexibility, focus, and a continuous flow of value.
 
@@ -120,3 +131,14 @@ Our workflow is built on three core principles inspired by the Kanban method, em
 
 3.  **Focus on Continuous Delivery**
     We don't work in rigid, time-boxed sprints. Our goal is a constant, smooth flow of completed tasks. We pull the highest-priority item from the backlog, finish it, and deliver it. This makes us highly adaptive and ensures we are always working on the most valuable feature at any given moment.
+
+---
+
+## 🎁 Deliverables
+
+By the end of the 48-hour hackathon, we will produce the following:
+
+1.  **Functional Software Prototype:** A standalone executable file (`.exe` or `.dmg`).
+2.  **Source Code:** A complete GitHub repository with this `README.md`.
+3.  **Pitch Deck:** A concise 5-slide presentation (Problem, Solution, Tech, Business Model, Team).
+4.  **Video Pitch:** A 2-minute pre-recorded video demonstrating the prototype in action.
