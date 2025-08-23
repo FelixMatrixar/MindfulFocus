@@ -8,7 +8,7 @@
 
 ![Status](https://img.shields.io/badge/Status-In%20Progress-blue?style=for-the-badge)
 ![Team](https://img.shields.io/badge/Team-NeuroGO-brightgreen?style=for-the-badge)
-![Framework](https://img.shields.io/badge/Framework-PRINCE2%20Agile-informational?style=for-the-badge)
+![Framework](https://img.shields.io/badge/Methodology-Kanban-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 </div>
@@ -31,24 +31,19 @@ While core features will remain free, a premium tier will be offered for teams a
 * **Premium Features:**
     * Team Dashboards & Anonymized Analytics
     * Advanced Personal Analytics & Historical Trends
-    * Integrations with Calendar Apps (Google, Outlook)
+        * Integrations with Calendar Apps (Google, Outlook)
 * **Payment Model:** A recurring monthly/annual subscription (SaaS).
 
 ---
 
 ## 🏢 2. Organization: Team NeuroGO
 
-For a lean two-person team, members wear multiple hats, covering all essential project roles.
+As a lean two-person team, our roles are fluid and collaborative, focused on getting the right work done.
 
-| Role | Assigned To | Key Responsibilities & Specialization |
+| Role | Member | Focus Areas & Responsibilities |
 | :--- | :--- | :--- |
-| **Executive** & <br> **Project Manager** & <br> **Senior Supplier** | **Felix** | As the **Technopreneur & Project Lead**, Felix sets the project vision, ensures it's technically feasible, and manages the day-to-day schedule. He is the specialist for the **Data and AI Flow Engineering**. |
-| **Senior User** & <br> **Lead Developer** | **Christie** | As the **Full Stack App Developer**, Christie builds the product and represents the end-user's perspective, ensuring the application is intuitive, functional, and meets user needs. |
-
-#### A Note on Analyst Roles
-In a two-person team, formal roles like **Business Analyst** and **Integration Analyst** are absorbed:
-* **Business Analysis** is covered by Felix's technopreneurial role, defining the "what" and "why" of the project.
-* **Integration Analysis** is handled by Christie as a full-stack developer, ensuring all parts of the application connect seamlessly.
+| **Product & Tech Lead** | **Felix** | Guides the project vision, manages priorities, and leads the development of the data and AI pipeline. |
+| **Lead Developer** | **Christie** | Leads the end-to-end application development, focusing on the user interface, backend integration, and overall user experience. |
 
 ---
 
@@ -68,25 +63,14 @@ Our definition of quality is a **stable, functional, and impressive demo**.
 
 ## 🗺️ 4. Plans
 
-The project is divided into two time-boxed stages to ensure key milestones are met.
+Our plan is a living backlog of prioritized tasks. We focus on a continuous flow of development, pulling the next most important task as soon as we have the capacity to work on it.
 
-<details>
-<summary><strong>📋 Stage 1: Proof of Concept (Hours 1-24)</strong></summary>
+The work is broadly grouped into two logical phases:
 
-The primary goal of this stage is to validate the core technology. The deliverable is an internal build where the AI model successfully feeds data to the application backend.
-* **Hours 1-2:** Setup & Initiation (Git repo, **Focalboard** project).
-* **Hours 3-12:** Core Model Development (Python w/ OpenCV, MediaPipe).
-* **Hours 13-24:** Backend API & Data Handling (e.g., FastAPI).
-</details>
+1.  **Core Technology:** Features related to building and validating the computer vision model and data pipeline.
+2.  **Application & UX:** Features related to the user interface, gamification, and preparing a polished demo.
 
-<details>
-<summary><strong>🚀 Stage 2: Productization & Demo Prep (Hours 25-48)</strong></summary>
-
-With a working backend, this stage focuses on building the user-facing application and ensuring it's ready for the final presentation.
-* **Hours 25-36:** UI/UX Development (Electron, React/Svelte).
-* **Hours 37-44:** Integration, Testing, and Bug Fixing.
-* **Hours 45-48:** Finalize Presentation & Practice Demo.
-</details>
+We will start with "Core Technology" priorities and fluidly transition to "Application & UX" tasks as the project matures.
 
 ---
 
@@ -99,9 +83,9 @@ A proactive approach to risk management is essential.
 
 | Risk ID | Risk Description | Response Plan |
 | ------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| **R01** | Inaccurate AI readings due to variable lighting. | Implement a simple, one-time calibration step on app startup. |
+| **R01** | Inaccurate AI readings due to variable lighting. | Implement a simple, one-time calibration step on app startup.              |
 | **R02** | High CPU usage slows down the user's computer. | Optimize frame processing rate to once every 2 seconds instead of continuously. |
-| **R03** | Scope creep from new ideas mid-hackathon. | The Project Manager will enforce the initial feature list. New ideas are logged in a backlog. |
+| **R03** | Unplanned work distracts from the main goal. | New ideas are added to the backlog and prioritized. We will complete current work before starting new tasks. |
 
 </details>
 
@@ -109,36 +93,30 @@ A proactive approach to risk management is essential.
 
 ## 🔄 6. Change
 
-Change will be handled via a lightweight control process: any proposed change must be presented to the **Project Manager**, who will make a rapid go/no-go decision after assessing its impact on the deadline.
+Our workflow is designed to embrace change. New ideas or requirement adjustments are added to the backlog, prioritized against existing tasks by the Product & Tech Lead, and pulled into the workflow as capacity allows.
 
 ---
 
 ## 📊 7. Progress
 
-Progress will be tracked visually using open-source tools to maintain momentum.
+Progress is tracked visually to ensure transparency and maintain momentum.
 
-* **Task Management:** A Kanban board in **Focalboard** will be our single source of truth for task status (`To Do`, `In Progress`, `Done`).
-* **Process Visualization:** Key workflows will be mapped in **Draw.io (diagrams.net)** to ensure clarity for all team members.
-* **Check-ins:** The team will hold 15-minute stand-ups every 6 hours to sync up, report progress, and identify blockers.
+* **Kanban Board:** A board in **Focalboard** is our single source of truth, with columns like `Backlog`, `To Do`, `In Progress`, and `Done`.
+* **Focus on Finishing:** To ensure speed and prevent bottlenecks, we will **limit our 'In Progress' tasks to one per person**. A new task is only started once the current one is finished.
+* **Process Visualization:** Key workflows are mapped in **Draw.io (diagrams.net)** to ensure clarity.
+* **Daily Check-ins:** We will hold quick 15-minute syncs twice a day to discuss progress and clear any blockers.
 
 ---
 
-## 💡 PRINCE2 & Iterative Development
+## 🌊 Our Development Approach
 
-**Traditionally, PRINCE2 itself is not iterative.** It focuses on high-level direction and control. However, it is designed to be flexible and is commonly integrated with agile methods in an approach known as **PRINCE2 Agile®**.
+Our workflow is built on three core principles inspired by the Kanban method, emphasizing flexibility, focus, and a continuous flow of value.
 
-Think of it this way:
-* **PRINCE2** is the strategic **mission command**, answering "What should we do?" and "Why?"
-* **Agile** methods are the tactical **squad on the ground**, answering "How will we build it in short, flexible cycles?"
+1.  **Visualize Everything**
+    Our board in Focalboard makes our entire workflow visible. This transparency allows us to see progress in real-time, instantly spot bottlenecks, and make informed decisions about what to work on next.
 
-### How It Applies to This Hackathon
-Our project plan uses this hybrid model:
+2.  **Limit Work in Progress (WIP)**
+    By strictly limiting the number of tasks we have "In Progress" at any one time, we improve our focus, increase the quality of our work, and dramatically speed up our delivery time. Our rule is simple: **Finish what you started before starting something new.**
 
-1.  **PRINCE2 Management Stages:** We've broken the 48-hour hackathon into two high-level stages (`Stage 1: Proof of Concept` and `Stage 2: Productization`). The decision to move between stages is a formal control point.
-
-2.  **Iterative Work Within Stages:** Inside each stage, your team will work in short **iterations** (or "sprints"). For example, within Stage 2, you could have:
-    * **Iteration 1 (4 hours):** Build the basic dashboard UI.
-    * **Iteration 2 (6 hours):** Integrate the AI data stream.
-    * **Iteration 3 (4 hours):** Implement the gamification logic.
-
-This approach provides both the high-level control of PRINCE2 and the on-the-ground flexibility of iterative development, which is perfect for a hackathon.
+3.  **Focus on Continuous Delivery**
+    We don't work in rigid, time-boxed sprints. Our goal is a constant, smooth flow of completed tasks. We pull the highest-priority item from the backlog, finish it, and deliver it. This makes us highly adaptive and ensures we are always working on the most valuable feature at any given moment.
