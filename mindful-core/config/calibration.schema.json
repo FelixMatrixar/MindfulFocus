@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mindful Focus Calibration",
+  "type": "object",
+  "required": ["device_id","started_at_unix","duration_s","blink_per_min_base","iris_ratio_mean","iris_ratio_std"],
+  "properties": {
+    "device_id": {"type":"string"},
+    "started_at_unix": {"type":"number"},
+    "duration_s": {"type":"number","minimum":30},
+    "blink_per_min_base": {"type":"number","minimum":0},
+    "iris_ratio_mean": {"type":"number"},
+    "iris_ratio_std": {"type":"number","minimum":0}
+  },
+  "additionalProperties": false
+}

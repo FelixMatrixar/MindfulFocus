@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: mindful-core
+Version: 0.1.0
+Summary: Mindful Focus: core calibration and rule engine.
+Author: NeuroGO
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10
+License-File: LICENSE
+Dynamic: license-file

@@ -1,0 +1,29 @@
+{
+ "ollama_config": {
+   "base_url": "http://localhost:11434",
+   "model": "llava",
+   "timeout": 120
+ },
+ "analysis_config": {
+   "default_analysis": "asymmetry",
+   "landmark_confidence": 0.5,
+   "tracking_confidence": 0.5,
+   "max_faces": 1,
+   "pixel_to_mm_ratio": 0.1
+ },
+ "output_config": {
+   "save_annotated_images": true,
+   "save_results_json": true,
+   "results_directory": "medical_analysis/results"
+ },
+ "medical_thresholds": {
+   "symmetry_excellent": 0.9,
+   "symmetry_good": 0.8,
+   "symmetry_fair": 0.7,
+   "ear_normal_diff": 0.02,
+   "ear_concerning_diff": 0.05,
+   "mouth_mild_asymmetry": 2.0,
+   "mouth_moderate_asymmetry": 5.0,
+   "mouth_severe_asymmetry": 10.0
+ }
+}
