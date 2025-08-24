@@ -1,9 +1,0 @@
-LICENSE
-pyproject.toml
-mindful_core/__init__.py
-mindful_core/calibration.py
-mindful_core/rules.py
-mindful_core.egg-info/PKG-INFO
-mindful_core.egg-info/SOURCES.txt
-mindful_core.egg-info/dependency_links.txt
-mindful_core.egg-info/top_level.txt

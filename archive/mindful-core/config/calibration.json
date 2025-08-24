@@ -1,8 +1,0 @@
-{
-  "device_id": "default_cam",
-  "started_at_unix": 1755970318.7885735,
-  "duration_s": 60.0,
-  "blink_per_min_base": 0.0,
-  "iris_ratio_mean": 0.0,
-  "iris_ratio_std": 0.0
-}
