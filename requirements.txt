@@ -1,0 +1,21 @@
+# Medical Pipeline Evaluator Requirements
+# Project: mindfulfocus-470008
+
+# Core ADK Framework
+google-adk
+google-generativeai
+
+# Computer Vision
+opencv-python
+mediapipe
+numpy
+Pillow
+
+# Data Processing
+pandas
+scipy
+
+# Utilities
+python-dotenv
+tqdm
+
