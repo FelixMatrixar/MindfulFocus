@@ -19,3 +19,6 @@ scipy
 python-dotenv
 tqdm
 
+PySide6
+pyinstaller
+keyring

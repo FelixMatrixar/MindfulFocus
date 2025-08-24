@@ -204,7 +204,6 @@ def calculate_performance_metrics(results_list: List[Dict], tool_context: ToolCo
         failed_frames = len(failed_results)
         
         # Basic success metrics
-        success_rate = successful_frames
         success_rate = successful_frames / total_frames if total_frames > 0 else 0
         detection_rate = (successful_frames + partial_frames) / total_frames if total_frames > 0 else 0
         

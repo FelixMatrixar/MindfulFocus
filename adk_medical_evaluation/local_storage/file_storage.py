@@ -90,7 +90,7 @@ class LocalFileStorage:
                 "frame_id": frame_id,
                 "timestamp": datetime.now().isoformat(),
                 "project_id": "mindfulfocus-470008",
-                "model": "gemini-1.5-pro",
+                "model": "gemini-2.5-pro",
                 "metrics": metrics_data
             }
             
@@ -123,7 +123,7 @@ class LocalFileStorage:
                 "session_id": session_id,
                 "timestamp": datetime.now().isoformat(),
                 "project_id": "mindfulfocus-470008",
-                "model": "gemini-1.5-pro",
+                "model": "gemini-2.5-pro",
                 "report": report_data
             }
             

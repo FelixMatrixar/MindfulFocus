@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mindful Focus — Dashboard</title>
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.js"></script>
+    <!-- Google Generative AI (Gemini) SDK -->
+    <script
+      src="https://esm.run/@google/generative-ai/dist/browser.mjs"
+      type="module"
+      defer
+    ></script>
+    <!-- sql.js (SQLite in browser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      .glass {
+        backdrop-filter: blur(10px);
+        background: color-mix(in oklab, canvas, canvastext 5% / 10%);
+      }
+      .card {
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      .btn {
+        @apply px-3 py-2 rounded-xl border transition;
+      }
+      .btn-ghost {
+        @apply border-transparent hover:border-gray-300;
+      }
+      .btn-solid {
+        @apply bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200;
+      }
+      .k {
+        @apply text-xs uppercase tracking-wide text-gray-500;
+      }
+      .v {
+        @apply text-2xl font-semibold;
+      }
+      .badge {
+        @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border;
+      }
+      .scroll-slim::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      .scroll-slim::-webkit-scrollbar-thumb {
+        background: #bbb;
+        border-radius: 9999px;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-50"
+  >
+    <!-- top bar -->
+    <header class="sticky top-0 z-30 glass border-b">
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3"
+      >
+        <div class="flex items-center gap-3">
+          <div class="size-9 rounded-xl bg-gray-900 dark:bg-white"></div>
+          <h1 class="text-lg font-semibold">Mindful Focus</h1>
+          <span id="secureHint" class="badge hidden">Insecure context</span>
+        </div>
+        <nav class="flex items-center gap-2">
+          <button id="tabDashboardBtn" class="btn btn-ghost">Dashboard</button>
+          <button id="tabPreviewBtn" class="btn btn-ghost">Preview</button>
+          <button id="tabDataBtn" class="btn btn-ghost">Data</button>
+          <button id="tabChatBtn" class="btn btn-ghost">Wellness Chat</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+      <!-- DASHBOARD -->
+      <section id="tab-dashboard" class="space-y-6">
+        <!-- ingest row -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="k mb-1">Load evaluation JSON</div>
+            <input
+              id="jsonInput"
+              type="file"
+              accept=".json"
+              class="block w-full text-sm file:btn file:btn-ghost"
+            />
+            <p class="text-xs text-gray-500 mt-2">
+              Drop your <code>aggregated_results_*.json</code> or
+              <code>final_report_*.json</code>.
+            </p>
+          </div>
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="k mb-1">Load SQLite database</div>
+            <input
+              id="dbInput"
+              type="file"
+              accept=".db,.sqlite"
+              class="block w-full text-sm file:btn file:btn-ghost"
+            />
+            <p class="text-xs text-gray-500 mt-2">
+              Select <code>local_database/medical_evaluation.db</code>.
+            </p>
+          </div>
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="k mb-1">Gemini API key</div>
+            <div class="flex gap-2">
+              <input
+                id="apiKey"
+                type="password"
+                placeholder="Enter GOOGLE_API_KEY"
+                class="flex-1 px-3 py-2 rounded-xl border bg-transparent"
+              />
+              <button id="saveKey" class="btn btn-solid">Save</button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              Stored in <code>localStorage</code> only on this browser.
+            </p>
+          </div>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="card p-5 bg-white dark:bg-gray-950 border">
+            <div class="k">Total Frames</div>
+            <div id="kpiTotalFrames" class="v">—</div>
+          </div>
+          <div class="card p-5 bg-white dark:bg-gray-950 border">
+            <div class="k">Primary Finding</div>
+            <div id="kpiFinding" class="v">—</div>
+          </div>
+          <div class="card p-5 bg-white dark:bg-gray-950 border">
+            <div class="k">Avg Symmetry</div>
+            <div id="kpiSymmetry" class="v">—</div>
+          </div>
+          <div class="card p-5 bg-white dark:bg-gray-950 border">
+            <div class="k">Avg Severity</div>
+            <div id="kpiSeverity" class="v">—</div>
+          </div>
+        </div>
+
+        <!-- charts -->
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="flex items-center justify-between">
+              <div class="font-medium">Symmetry Over Time</div>
+              <span class="k">from JSON</span>
+            </div>
+            <canvas id="symmetryChart" class="mt-3"></canvas>
+          </div>
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="flex items-center justify-between">
+              <div class="font-medium">Severity Distribution</div>
+              <span class="k">from JSON</span>
+            </div>
+            <canvas id="severityChart" class="mt-3"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREVIEW -->
+      <section id="tab-preview" class="hidden space-y-4">
+        <div class="grid md:grid-cols-[2fr_1fr] gap-4 items-start">
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-medium">Camera Preview</div>
+              <div class="flex gap-2">
+                <button id="btnStart" class="btn btn-solid">Start</button>
+                <button id="btnStop" class="btn btn-ghost">Stop</button>
+              </div>
+            </div>
+            <video
+              id="video"
+              playsinline
+              autoplay
+              muted
+              class="w-full rounded-xl bg-black aspect-video"
+            ></video>
+          </div>
+          <div class="card p-4 bg-white dark:bg-gray-950 border">
+            <div class="font-medium mb-2">Device</div>
+            <select
+              id="deviceSelect"
+              class="w-full px-3 py-2 rounded-xl border bg-transparent"
+            ></select>
+            <p id="cameraError" class="text-xs text-red-500 mt-2 hidden"></p>
+            <div class="k mt-4">Tips</div>
+            <ul class="text-sm list-disc pl-5 mt-2 space-y-1">
+              <li>
+                Use <span class="font-mono">http://localhost</span> or
+                <span class="font-mono">https://</span>. <em>file://</em> won’t
+                allow camera.
+              </li>
+              <li>Allow camera permission when prompted.</li>
+              <li>Close other apps locking the camera (Zoom, Teams, etc.).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- DATA -->
+      <section id="tab-data" class="hidden space-y-4">
+        <div class="card p-4 bg-white dark:bg-gray-950 border">
+          <div class="font-medium mb-2">SQLite Browser</div>
+          <div class="flex gap-2">
+            <button id="btnListTables" class="btn btn-ghost">
+              List tables
+            </button>
+            <button id="btnRunQuery" class="btn btn-ghost">
+              Run sample query
+            </button>
+          </div>
+          <textarea
+            id="sqlInput"
+            class="w-full h-32 mt-3 px-3 py-2 rounded-xl border bg-transparent font-mono text-sm"
+            placeholder="SELECT * FROM evaluation_results ORDER BY timestamp DESC LIMIT 50;"
+          ></textarea>
+          <div id="sqlOut" class="mt-3 overflow-auto scroll-slim"></div>
+        </div>
+
+        <div class="card p-4 bg-white dark:bg-gray-950 border">
+          <div class="font-medium mb-2">Raw JSON Preview</div>
+          <pre
+            id="jsonPreview"
+            class="max-h-72 overflow-auto text-xs scroll-slim"
+          ></pre>
+        </div>
+      </section>
+
+      <!-- CHAT -->
+      <section id="tab-chat" class="hidden space-y-3">
+        <div class="card p-4 bg-white dark:bg-gray-950 border">
+          <div class="flex items-center justify-between">
+            <div class="font-medium">Wellness Chat (Gemini 2.5 Pro)</div>
+            <div class="text-xs text-gray-500">
+              On-device privacy mindset; no diagnoses.
+            </div>
+          </div>
+          <div
+            id="chatLog"
+            class="mt-3 space-y-3 max-h-[50vh] overflow-auto scroll-slim"
+          ></div>
+          <form id="chatForm" class="mt-3 flex gap-2">
+            <input
+              id="chatInput"
+              class="flex-1 px-3 py-2 rounded-xl border bg-transparent"
+              placeholder="Say hi, ask for a 20-20-20 nudge, a 1-minute reset, etc."
+            />
+            <button class="btn btn-solid">Send</button>
+          </form>
+          <p id="chatWarn" class="text-xs text-amber-600 mt-2 hidden"></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 pb-10 text-xs text-gray-500">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shield-check"></i>
+        <span
+          >Privacy-first. Data stays local in your browser (JSON/DB never leaves
+          your machine).</span
+        >
+      </div>
+    </footer>
+
+    <script>
+      // ---------- tab switching ----------
+      const tabs = {
+        dashboard: document.getElementById("tab-dashboard"),
+        preview: document.getElementById("tab-preview"),
+        data: document.getElementById("tab-data"),
+        chat: document.getElementById("tab-chat"),
+      };
+      const btns = {
+        dashboard: document.getElementById("tabDashboardBtn"),
+        preview: document.getElementById("tabPreviewBtn"),
+        data: document.getElementById("tabDataBtn"),
+        chat: document.getElementById("tabChatBtn"),
+      };
+      function showTab(name) {
+        Object.values(tabs).forEach((el) => el.classList.add("hidden"));
+        tabs[name].classList.remove("hidden");
+        localStorage.setItem("mf_tab", name);
+      }
+      btns.dashboard.onclick = () => showTab("dashboard");
+      btns.preview.onclick = () => showTab("preview");
+      btns.data.onclick = () => showTab("data");
+      btns.chat.onclick = () => showTab("chat");
+      showTab(localStorage.getItem("mf_tab") || "dashboard");
+
+      // ---------- lucide icons ----------
+      lucide.createIcons();
+
+      // ---------- secure context hint ----------
+      const secureHint = document.getElementById("secureHint");
+      if (!window.isSecureContext) {
+        secureHint.classList.remove("hidden");
+        secureHint.textContent =
+          "Open via http(s) — camera needs a secure context";
+        secureHint.classList.add("border-amber-300", "text-amber-700");
+      }
+
+      // ---------- KPI + charts ----------
+      let symmetryChart, severityChart;
+      const kpi = {
+        frames: document.getElementById("kpiTotalFrames"),
+        finding: document.getElementById("kpiFinding"),
+        symmetry: document.getElementById("kpiSymmetry"),
+        severity: document.getElementById("kpiSeverity"),
+      };
+      const ctxSym = document.getElementById("symmetryChart");
+      const ctxSev = document.getElementById("severityChart");
+
+      function avg(arr) {
+        return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      }
+      function fmt(n, d = 3) {
+        return (isFinite(n) ? n : 0).toFixed(d);
+      }
+
+      function ensureCharts() {
+        if (!symmetryChart) {
+          symmetryChart = new Chart(ctxSym, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [{ label: "Symmetry Score", data: [] }],
+            },
+            options: { responsive: true, maintainAspectRatio: false },
+          });
+        }
+        if (!severityChart) {
+          severityChart = new Chart(ctxSev, {
+            type: "bar",
+            data: {
+              labels: [],
+              datasets: [{ label: "Severity Score", data: [] }],
+            },
+            options: { responsive: true, maintainAspectRatio: false },
+          });
+        }
+      }
+
+      function updateFromAggregated(json) {
+        // expects processing_results[] w/ symmetry_score, severity_score
+        const frames = json.processing_results || [];
+        const sym = frames
+          .map((f) => Number(f.symmetry_score))
+          .filter(Number.isFinite);
+        const sev = frames
+          .map((f) => Number(f.severity_score))
+          .filter(Number.isFinite);
+
+        kpi.symmetry.textContent = sym.length ? fmt(avg(sym)) : "—";
+        kpi.severity.textContent = sev.length ? fmt(avg(sev)) : "—";
+        kpi.frames.textContent =
+          json?.metadata?.total_frames_processed ?? frames.length ?? "—";
+
+        ensureCharts();
+        symmetryChart.data.labels = frames.map((f) => f.frame_id ?? "");
+        symmetryChart.data.datasets[0].data = sym;
+        symmetryChart.update();
+
+        // simple histogram-ish buckets
+        const buckets = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+        const counts = Array(buckets.length - 1).fill(0);
+        sev.forEach((v) => {
+          for (let i = 0; i < buckets.length - 1; i++) {
+            if (v >= buckets[i] && v < buckets[i + 1]) {
+              counts[i]++;
+              break;
+            }
+          }
+        });
+        const labels = counts.map(
+          (_, i) => `${buckets[i].toFixed(1)}–${buckets[i + 1].toFixed(1)}`
+        );
+        severityChart.data.labels = labels;
+        severityChart.data.datasets[0].data = counts;
+        severityChart.update();
+      }
+
+      function updateFromReport(json) {
+        const exec = json?.executive_summary || {};
+        if (exec.total_frames_processed)
+          kpi.frames.textContent = exec.total_frames_processed;
+        if (exec.primary_finding)
+          kpi.finding.textContent = exec.primary_finding.replaceAll("_", " ");
+      }
+
+      // ---------- JSON loader ----------
+      const jsonInput = document.getElementById("jsonInput");
+      const jsonPreview = document.getElementById("jsonPreview");
+      jsonInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const txt = await file.text();
+        jsonPreview.textContent = txt.slice(0, 200_000);
+        let data;
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          return;
+        }
+
+        // Heuristics: detect which JSON it is
+        if (data.processing_results) updateFromAggregated(data);
+        if (data.executive_summary) updateFromReport(data);
+      });
+
+      // ---------- SQLite (sql.js) ----------
+      let SQL, db;
+      const dbInput = document.getElementById("dbInput");
+      const sqlOut = document.getElementById("sqlOut");
+      const sqlInput = document.getElementById("sqlInput");
+      const btnListTables = document.getElementById("btnListTables");
+      const btnRunQuery = document.getElementById("btnRunQuery");
+
+      (async () => {
+        SQL = await initSqlJs({
+          locateFile: (f) =>
+            `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}`,
+        });
+      })();
+
+      dbInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const buf = await file.arrayBuffer();
+        db = new SQL.Database(new Uint8Array(buf));
+        sqlOut.innerHTML = `<div class="text-sm text-green-600">Database loaded: <b>${file.name}</b></div>`;
+      });
+
+      btnListTables.onclick = () => {
+        if (!db) return alert("Load a SQLite DB first.");
+        const res = db.exec(
+          "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+        );
+        renderSQL(res);
+      };
+
+      btnRunQuery.onclick = () => {
+        if (!db) return alert("Load a SQLite DB first.");
+        const q =
+          sqlInput.value.trim() ||
+          "SELECT name FROM sqlite_master WHERE type='table';";
+        try {
+          const res = db.exec(q);
+          renderSQL(res);
+        } catch (err) {
+          sqlOut.innerHTML = `<div class="text-sm text-red-600">SQL error: ${String(
+            err
+          )}</div>`;
+        }
+      };
+
+      function renderSQL(res) {
+        if (!res || !res.length) {
+          sqlOut.innerHTML = '<div class="text-sm">No rows.</div>';
+          return;
+        }
+        const { columns, values } = res[0];
+        const head = `<thead><tr>${columns
+          .map((c) => `<th class="px-2 py-1 text-left border-b">${c}</th>`)
+          .join("")}</tr></thead>`;
+        const body = `<tbody>${values
+          .map(
+            (r) =>
+              `<tr>${r
+                .map(
+                  (v) =>
+                    `<td class="px-2 py-1 border-b align-top">${escapeHTML(
+                      String(v)
+                    )}</td>`
+                )
+                .join("")}</tr>`
+          )
+          .join("")}</tbody>`;
+        sqlOut.innerHTML = `<div class="overflow-auto"><table class="text-sm w-full">${head}${body}</table></div>`;
+      }
+      function escapeHTML(s) {
+        return s.replace(
+          /[&<>"'`]/g,
+          (ch) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+              "`": "&#96;",
+            }[ch])
+        );
+      }
+
+      // ---------- Camera preview ----------
+      const video = document.getElementById("video");
+      const deviceSelect = document.getElementById("deviceSelect");
+      const cameraError = document.getElementById("cameraError");
+      const btnStart = document.getElementById("btnStart");
+      const btnStop = document.getElementById("btnStop");
+      let stream = null;
+
+      async function listDevices() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cams = devices.filter((d) => d.kind === "videoinput");
+        deviceSelect.innerHTML = cams
+          .map(
+            (d, i) =>
+              `<option value="${d.deviceId}">${
+                d.label || "Camera " + (i + 1)
+              }</option>`
+          )
+          .join("");
+      }
+
+      async function startCamera() {
+        cameraError.classList.add("hidden");
+        if (!window.isSecureContext) {
+          cameraError.textContent =
+            "Camera requires a secure context (https or localhost).";
+          cameraError.classList.remove("hidden");
+          return;
+        }
+        try {
+          const deviceId = deviceSelect.value || undefined;
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: deviceId
+              ? { deviceId: { exact: deviceId } }
+              : { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false,
+          });
+          video.srcObject = stream;
+          await listDevices();
+        } catch (err) {
+          cameraError.textContent =
+            "Camera start failed: " + String(err?.message || err);
+          cameraError.classList.remove("hidden");
+        }
+      }
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach((t) => t.stop());
+          stream = null;
+          video.srcObject = null;
+        }
+      }
+      btnStart.onclick = startCamera;
+      btnStop.onclick = stopCamera;
+
+      // enumerate once permission granted
+      if (navigator.mediaDevices?.getUserMedia) {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: false })
+          .then((s) => {
+            s.getTracks().forEach((t) => t.stop());
+            return listDevices();
+          })
+          .catch(() => {
+            /* ignore until user clicks Start */
+          });
+      }
+
+      // ---------- Gemini Chat ----------
+      const apiKeyEl = document.getElementById("apiKey");
+      const saveKey = document.getElementById("saveKey");
+      const chatLog = document.getElementById("chatLog");
+      const chatForm = document.getElementById("chatForm");
+      const chatInput = document.getElementById("chatInput");
+      const chatWarn = document.getElementById("chatWarn");
+
+      apiKeyEl.value = localStorage.getItem("mf_gemini_key") || "";
+      saveKey.onclick = () => {
+        localStorage.setItem("mf_gemini_key", apiKeyEl.value.trim());
+        chatWarn.classList.add("hidden");
+      };
+
+      function pushMsg(role, text) {
+        const wrap = document.createElement("div");
+        wrap.className = "flex gap-3";
+        wrap.innerHTML = `
+        <div class="size-8 rounded-xl ${
+          role === "you"
+            ? "bg-gray-900 dark:bg-white"
+            : "bg-gray-200 dark:bg-gray-800"
+        }"></div>
+        <div class="flex-1">
+          <div class="text-xs k mb-1">${role === "you" ? "You" : "Gemini"}</div>
+          <div class="text-sm whitespace-pre-wrap">${escapeHTML(text)}</div>
+        </div>`;
+        chatLog.appendChild(wrap);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const key = (apiKeyEl.value || "").trim();
+        if (!key) {
+          chatWarn.textContent =
+            "Enter your GOOGLE_API_KEY to use Gemini 2.5 Pro.";
+          chatWarn.classList.remove("hidden");
+          return;
+        }
+        const user = (chatInput.value || "").trim();
+        if (!user) return;
+        pushMsg("you", user);
+        chatInput.value = "";
+
+        try {
+          // Use SDK dynamically to avoid type="module" scoping issues:
+          const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } =
+            await import("https://esm.run/@google/generative-ai");
+          const genAI = new GoogleGenerativeAI(key);
+          const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-pro",
+            systemInstruction:
+              "You are a privacy-first wellness companion. Keep responses concise, supportive, and practical. " +
+              "Offer evidence-based micro-breaks, eye-care (20-20-20), hydration, posture resets, breathing exercises, " +
+              "and light cognitive load strategies. No medical diagnoses; in emergencies, advise professional help.",
+          });
+
+          const safetySettings = [
+            {
+              category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+              threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+              threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_SEXUAL,
+              threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_DANGEROUS,
+              threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
+              threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_SEXUAL_MINORS,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+          ];
+
+          const generationConfig = {
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 512,
+          };
+
+          const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: user }] }],
+            safetySettings,
+            generationConfig,
+          });
+
+          const cand = result?.response?.candidates?.[0];
+          const finish = cand?.finishReason;
+          const text = result?.response?.text?.();
+          if (finish && finish !== "STOP") {
+            pushMsg("model", `(blocked by safety: ${finish}). Try rephrasing.`);
+          } else {
+            pushMsg("model", text || "I’m here for you.");
+          }
+        } catch (err) {
+          pushMsg("model", `(Gemini error: ${String(err?.message || err)})`);
+        }
+      });
+    </script>
+  </body>
+</html>
