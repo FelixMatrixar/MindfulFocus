@@ -1,0 +1,53 @@
+{
+  "name": "mindfulfocus",
+  "version": "1.0.0",
+  "description": "Mindful Focus desktop app with Electron + React + SQLite",
+  "author": "NeuroGO",
+  "license": "ISC",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev": "concurrently \"cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron . --no-sandbox --disable-dev-shm-usage\" \"cd frontend && npm run dev\"",
+    "clean-dev": "rimraf dist && rimraf frontend/dist && npm run dev",
+    "start": "npm run build:frontend && electron .",
+    "build:frontend": "cd frontend && npm run build && cd ..",
+    "build": "npm run build:frontend && electron-builder",
+    "rebuild": "rimraf dist && rimraf frontend/dist && npm run build"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "vite",
+    "sqlite",
+    "mindfulfocus"
+  ],
+  "dependencies": {
+    "better-sqlite3": "^12.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12",
+    "rimraf": "^6.0.1",
+    "wait-on": "^8.0.4"
+  },
+  "build": {
+    "appId": "com.mindfulfocus.app",
+    "productName": "Mindful Focus",
+    "files": [
+      "src/main/**/*",
+      "frontend/dist/**/*",
+      "!frontend/dist/win-unpacked/**/*",
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "directories": {
+      "buildResources": "frontend/Assets",
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "frontend/Assets/Logo.ico",
+      "signAndEditExecutable": false
+    }
+  }
+}

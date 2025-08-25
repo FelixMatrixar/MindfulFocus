@@ -1,3 +1,6 @@
 .env
 
 adk_medical_evaluation\config\*
+
+MindfulFocus/node_modules
+MindfulFocus/frontend/node_modules

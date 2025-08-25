@@ -1,0 +1,242 @@
+{
+  "name": "mindfulfocus",
+  "version": "1.0.0",
+  "description": "Mindful Focus desktop app with Electron + React + SQLite",
+  "author": "NeuroGO",
+  "license": "ISC",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev": "concurrently \"cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\" \"cd frontend && npm run dev\"",
+    "start": "npm run build:frontend && electron .",
+    "build:frontend": "cd frontend && npm run build && cd ..",
+    "build": "npm run build:frontend && electron-builder",
+    "rebuild": "rimraf dist && rimraf frontend/dist && npm run build"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "vite",
+    "sqlite",
+    "mindfulfocus"
+  ],
+  "dependencies": {
+    "better-sqlite3": "^12.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12",
+    "rimraf": "^6.0.1",
+    "wait-on": "^8.0.4"
+  },
+  "build": {
+    "appId": "com.mindfulfocus.app",
+    "productName": "Mindful Focus",
+    "files": [
+      "src/main/**/*",
+      "frontend/dist/**/*",
+      "!frontend/dist/win-unpacked/**/*",
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "directories": {
+      "buildResources": "frontend/Assets",
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "frontend/Assets/Logo.ico",
+      "signAndEditExecutable": false    
+    }
+  }
+}const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
+const Database = require("better-sqlite3");
+
+// Enable camera/media access
+app.commandLine.appendSwitch("enable-features", "MediaStream");
+
+let mainWindow;
+const db = new Database(path.join(app.getPath("userData"), "tokens.db"));
+db.prepare("CREATE TABLE IF NOT EXISTS tokens (user_id TEXT PRIMARY KEY, balance INTEGER DEFAULT 0)").run();
+db.prepare("INSERT OR IGNORE INTO tokens(user_id, balance) VALUES(?, ?)").run("default", 0);
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../../app/index.html"));
+  }
+}
+
+app.whenReady().then(createWindow);
+
+ipcMain.handle("get-balance", () => {
+  return db.prepare("SELECT balance FROM tokens WHERE user_id=?").get("default").balance;
+});
+ipcMain.handle("add-tokens", (_, amount) => {
+  db.prepare("UPDATE tokens SET balance = balance + ? WHERE user_id=?").run(amount, "default");
+  return db.prepare("SELECT balance FROM tokens WHERE user_id=?").get("default").balance;
+});
+const { contextBridge, ipcRenderer } = require("electron");
+
+contextBridge.exposeInMainWorld("api", {
+  getBalance: () => ipcRenderer.invoke("get-balance"),
+  addTokens: (amt) => ipcRenderer.invoke("add-tokens", amt),
+});
+import { useEffect, useState, useRef } from "react";
+import { Radar } from "react-chartjs-2";
+import Typed from "typed.js";
+import "chart.js/auto";
+import "./index.css";
+
+function App() {
+  const [balance, setBalance] = useState(0);
+  const [chartData, setChartData] = useState([8, 5, 9, 3, 7]);
+  const typedRef = useRef(null);
+
+  useEffect(() => {
+    // ✅ Safe camera init after mount
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        const video = document.getElementById("camera");
+        if (video) video.srcObject = stream;
+      })
+      .catch(err => console.error("Camera error:", err));
+
+    // Typing effect
+    if (typedRef.current) typedRef.current.destroy();
+    typedRef.current = new Typed("#recommendation", {
+      strings: ["You should rest.", "Try stretching.", "Stay hydrated."],
+      typeSpeed: 40,
+      backSpeed: 20,
+      backDelay: 2500,
+      loop: true,
+    });
+
+    return () => {
+      if (typedRef.current) typedRef.current.destroy();
+    };
+  }, []);
+
+  const labels = ["Face Asymmetry", "Fatigue", "Eye Strain", "Worsened Posture", "Stressed Emotion"];
+
+  return (
+    <div className="h-screen w-screen flex flex-col bg-white">
+      <div className="flex justify-between items-center border-b-2 border-brandBlue p-4">
+        <div className="flex items-center space-x-2">
+          <img src="/Assets/Logo.png" alt="Logo" className="h-10" />
+          <h1 className="text-2xl font-bold text-brandBlue">Mindful Focus</h1>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-semibold text-brandBlue">Your Reward</p>
+          <p className="text-2xl font-bold text-brandBlue flex items-center justify-end gap-1">
+            {balance} <span className="text-yellow-500">⭐</span>
+          </p>
+          <p className="text-xs text-gray-600">1 Token = 1 USD</p>
+        </div>
+      </div>
+
+      <div className="flex flex-1 p-6 space-x-6">
+        <div className="flex-1 rounded-xl overflow-hidden border-4 border-brandBlue">
+          <video id="camera" autoPlay muted playsInline className="w-full h-full object-cover"></video>
+        </div>
+
+        <div className="w-1/3 flex flex-col space-y-6">
+          <div className="bg-white shadow rounded-xl p-4 border border-gray-200">
+            <Radar
+              data={{
+                labels,
+                datasets: [
+                  {
+                    label: "Badness",
+                    data: chartData,
+                    backgroundColor: "rgba(255, 165, 0, 0.3)",
+                    borderColor: "#ff9900",
+                    borderWidth: 2,
+                    pointRadius: 0,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                scales: { r: { min: 0, max: 10 } },
+                plugins: { legend: { display: false } },
+              }}
+            />
+          </div>
+
+          <div className="bg-white shadow rounded-xl p-4 border border-gray-200">
+            <p id="recommendation" className="text-xl italic text-orange-500 font-semibold before:content-['✨']"></p>
+            <p className="text-xs text-brandBlue mt-1">AI Recommendation</p>
+            <p className="mt-3 text-sm text-black">
+              Take a short break of 5 mins with any exercise will earn you 2 tokens.
+            </p>
+            <button className="mt-4 bg-brandBlue text-white px-4 py-2 rounded-lg">
+              I did it ✅
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  const video = document.getElementById("camera");
+  if (video) video.srcObject = stream;
+});
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #ffffff;
+}
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: 'dist',   
+    emptyOutDir: true,
+  },
+})
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        brandBlue: "#1358D5",
+      },
+    },
+  },
+  plugins: [],
+}
